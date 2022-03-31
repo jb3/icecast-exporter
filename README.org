@@ -1,1 +1,27 @@
 #+TITLE: Icecast Exporter
+
+Icecast Exporter exports statistics from Icecast into Prometheus.
+
+We use this at [[https://urn1350.net/][University Radio Nottingham]] for pulling statistics from our web streaming into a Grafana instance which is used to find listener counts in time-series.
+
+** Usage
+
+Once you have a binary, you can use the program with the following command line flags:
+
+| Flag       | Default    | Required | Description                                                     |
+|------------+------------+----------+-----------------------------------------------------------------|
+| ~url~      | N/A        | ✅       | The URL of the Icecast ~status-json.xsl~ endpoint to poll from. |
+| ~port~     | 2112       | ❌       | The port to listen and serve metrics from.                      |
+| ~endpoint~ | ~/metrics~ | ❌       | Endpoint to serve metrics from.                                 |
+| ~interval~ | ~15~       | ❌       | Timing interval to poll Icecast (seconds).                      |
+
+An example invocation is as follows:
+
+#+BEGIN_SRC bash
+$ ./icecast-exporter -url https://icecast.example.com/status-json.xsl -port 1234
+#+END_SRC
+
+
+** License
+
+This project is licensed under MIT.
