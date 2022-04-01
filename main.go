@@ -56,11 +56,10 @@ func updateListeners(url string, wait int) {
 
 			if err != nil {
 				log.Println("Error polling Icecast endpoint, trying again in", wait)
-				return
-			}
-
-			for index, element := range resp.Icestats.Source {
-				listeners.WithLabelValues(element.ServerName, fmt.Sprint(index)).Set(float64(element.Listeners))
+			} else {
+				for index, element := range resp.Icestats.Source {
+					listeners.WithLabelValues(element.ServerName, fmt.Sprint(index)).Set(float64(element.Listeners))
+				}
 			}
 
 			time.Sleep(15 * time.Second)
@@ -80,7 +79,7 @@ func main() {
 		log.Fatalf("Missing required argument -url, see '%s -help' for information", os.Args[0])
 	}
 
-	log.Println("Starting Icecast Exporter...")
+	log.Println("Starting Icecast Exporter")
 
 	updateListeners(*urlPtr, *waitPtr)
 
