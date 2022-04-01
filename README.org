@@ -12,7 +12,7 @@ Ensure you have a working Go installation (minimum 1.18) and run the following:
 $ go install github.com/jb3/icecast-exporter@latest
 #+END_SRC
 
-Once installed, you will find the compiled binary at ~~/go/bin/icecast-exporter~
+Once installed, you will find the compiled binary at ~/home/user/go/bin/icecast-exporter~.
 
 ** Usage
 
