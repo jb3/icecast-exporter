@@ -33,7 +33,7 @@ $ ./icecast-exporter -url https://icecast.example.com/status-json.xsl -port 1234
 
 ** Running in the background
 
-An example FreeBSD `rc.d` service might look like:
+An example FreeBSD ~rc.d~ service might look like:
 
 #+BEGIN_SRC shell
 #!/bin/sh
