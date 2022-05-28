@@ -18,7 +18,7 @@ type StatusRoot struct {
 }
 
 type IcecastStats struct {
-	Source Stream
+	Source []Stream
 }
 
 type Stream struct {
@@ -57,7 +57,9 @@ func updateListeners(url string, wait int) {
 			if err != nil {
 				log.Println("Error polling Icecast endpoint, trying again in", wait)
 			} else {
-				listeners.WithLabelValues(resp.Icestats.Source.ServerName, "0").Set(float64(resp.Icestats.Source.Listeners))
+				for index, element := range resp.Icestats.Source {
+					listeners.WithLabelValues(element.ServerName, fmt.Sprint(index)).Set(float64(element.Listeners))
+				}
 			}
 
 			time.Sleep(15 * time.Second)
