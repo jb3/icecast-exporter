@@ -57,7 +57,7 @@ func updateListeners(url string, wait int) {
 			if err != nil {
 				log.Println("Error polling Icecast endpoint, trying again in", wait)
 			} else {
-				listeners.WithLabelValues(resp.Icestats.Source.ServerName).Set(float64(resp.Icestats.Source.Listeners))
+				listeners.WithLabelValues(resp.Icestats.Source.ServerName, "0").Set(float64(resp.Icestats.Source.Listeners))
 			}
 
 			time.Sleep(15 * time.Second)
