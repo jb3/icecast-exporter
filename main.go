@@ -77,7 +77,7 @@ func main() {
 	portPtr := flag.Int("port", 2112, "Port to listen on for metrics")
 	endpointPtr := flag.String("endpoint", "/metrics", "Metrics endpoint to listen on")
 	waitPtr := flag.Int("interval", 15, "Interval to update statistics from Icecast")
-	clockPtr := flag.String("clock", nil, "VClock URL")
+	clockPtr := flag.String("clock", "", "VClock URL")
 
 	flag.Parse()
 
