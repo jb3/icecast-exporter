@@ -49,7 +49,13 @@ func LoadIcecastStatus(url string) (stats *StatusRoot, err error) {
 	return
 }
 
-func updateListeners(url string, wait int) {
+func publishVClock(clock string, listeners int) {
+	s := fmt.Sprintf("http://%s/?Command=SetMem=Listeners,%d", clock, listeners)
+	
+	http.Get(s)
+}
+
+func updateListeners(url string, wait int, clock string) {
 	go func() {
 		for {
 			resp, err := LoadIcecastStatus(url)
@@ -58,6 +64,7 @@ func updateListeners(url string, wait int) {
 				log.Println("Error polling Icecast endpoint, trying again in", wait)
 			} else {
 				listeners.WithLabelValues(resp.Icestats.Source.ServerName, "0").Set(float64(resp.Icestats.Source.Listeners))
+				publishVClock(clock, resp.Icestats.Source.Listeners)
 			}
 
 			time.Sleep(15 * time.Second)
@@ -70,6 +77,7 @@ func main() {
 	portPtr := flag.Int("port", 2112, "Port to listen on for metrics")
 	endpointPtr := flag.String("endpoint", "/metrics", "Metrics endpoint to listen on")
 	waitPtr := flag.Int("interval", 15, "Interval to update statistics from Icecast")
+	clockPtr := flag.String("clock", nil, "VClock URL")
 
 	flag.Parse()
 
@@ -79,7 +87,7 @@ func main() {
 
 	log.Println("Starting Icecast Exporter")
 
-	updateListeners(*urlPtr, *waitPtr)
+	updateListeners(*urlPtr, *waitPtr, *clockPtr)
 
 	http.Handle(*endpointPtr, promhttp.Handler())
 	http.ListenAndServe(fmt.Sprintf(":%d", *portPtr), nil)
