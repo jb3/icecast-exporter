@@ -52,7 +52,15 @@ func LoadIcecastStatus(url string) (stats *StatusRoot, err error) {
 func publishVClock(clock string, listeners int) {
 	s := fmt.Sprintf("http://%s/?Command=SetMem=Listeners,%d", clock, listeners)
 	
-	http.Get(s)
+	resp, err := http.Get(s)
+	
+	if err != nil {
+		return
+	}
+	
+	defer resp.Body.Close()
+	
+	return
 }
 
 func updateListeners(url string, wait int, clock string) {
@@ -64,7 +72,7 @@ func updateListeners(url string, wait int, clock string) {
 				log.Println("Error polling Icecast endpoint, trying again in", wait)
 			} else {
 				listeners.WithLabelValues(resp.Icestats.Source.ServerName, "0").Set(float64(resp.Icestats.Source.Listeners))
-				publishVClock(clock, resp.Icestats.Source.Listeners)
+				go publishVClock(clock, resp.Icestats.Source.Listeners)
 			}
 
 			time.Sleep(15 * time.Second)
