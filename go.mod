@@ -1,4 +1,4 @@
-module github.com/URN/icecast-exporter
+module github.com/jb3/icecast-exporter
 
 go 1.18
 
