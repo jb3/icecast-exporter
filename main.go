@@ -75,7 +75,7 @@ func updateListeners(url string, wait int, clock string) {
 				go publishVClock(clock, resp.Icestats.Source.Listeners)
 			}
 
-			time.Sleep(15 * time.Second)
+			time.Sleep(time.Duration(wait) * time.Second)
 		}
 	}()
 }
