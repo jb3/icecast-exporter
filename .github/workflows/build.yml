@@ -1,0 +1,77 @@
+name: Go Build and Release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Release binaries
+    strategy:
+      matrix:
+        goos: [linux, darwin]
+        goarch: [amd64, arm64]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.25'
+
+    - name: Build release binary
+      run: go build -ldflags "-s -w" -o release/
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+
+    - name: Create archive of binary
+      run: tar czvf icecast-exporter.${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz -C release icecast-exporter
+
+    - name: Attest artifact
+      uses: actions/attest-build-provenance@v3
+      with:
+        subject-path: 'icecast-exporter.${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz'
+
+    - name: Publish GitHub Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: icecast-exporter.${{ matrix.goos }}-${{ matrix.goarch }}
+        path: icecast-exporter.${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+        if-no-files-found: error
+
+  release:
+    needs: build
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push' && github.ref_type == 'tag'
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v8
+      with:
+        path: release
+    - name: Create GitHub release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          release/icecast-exporter.darwin-amd64/icecast-exporter.darwin-amd64.tar.gz
+          release/icecast-exporter.darwin-arm64/icecast-exporter.darwin-arm64.tar.gz
+          release/icecast-exporter.linux-amd64/icecast-exporter.linux-amd64.tar.gz
+          release/icecast-exporter.linux-arm64/icecast-exporter.linux-arm64.tar.gz
+        generate_release_notes: true
+        draft: false
+        prerelease: ${{ contains(github.ref, '-rc') }}
+        make_latest: ${{ contains(github.ref, '-rc') && 'false' || 'true' }}
