@@ -85,6 +85,7 @@ func (c IcecastClient) updateListeners(url string, wait int, clock string) {
 
 			if err != nil {
 				log.Println("Error polling Icecast endpoint, trying again in", wait)
+				log.Printf("Error: %v", err)
 			} else {
 				listeners.WithLabelValues(resp.Icestats.Source.ServerName, "0").Set(float64(resp.Icestats.Source.Listeners))
 				go publishVClock(clock, resp.Icestats.Source.Listeners)
@@ -99,6 +100,7 @@ func main() {
 	urlPtr := flag.String("url", "", "Icecast status endpoint (normally: http://icecast.example.com/status-json.xsl)")
 	passwordPtr := flag.String("password", "", "Icecast admin password. Non recomended, use env ICECAST_PASSWORD")
 	usernamePtr := flag.String("username", "", "Icecast admin username")
+	IcecastConfigPtr := flag.String("icecast-config", "", "Icecast config. For authorization")
 	portPtr := flag.Int("port", 2112, "Port to listen on for metrics")
 	endpointPtr := flag.String("endpoint", "/metrics", "Metrics endpoint to listen on")
 	waitPtr := flag.Int("interval", 15, "Interval to update statistics from Icecast")
@@ -122,6 +124,14 @@ func main() {
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
+	}
+	if *IcecastConfigPtr != "" {
+		icecastConfig, err := ParseIcecastConfig(*IcecastConfigPtr)
+		if err != nil {
+			panic(err)
+		}
+		client.Username = icecastConfig.AdminUser
+		client.Password = icecastConfig.AdminPassword
 	}
 
 	log.Println("Starting Icecast Exporter")
